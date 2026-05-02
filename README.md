@@ -6,8 +6,8 @@ An interactive, AI-powered civic platform that guides users through the complete
 
 ## 🌐 Live Demo
 
-* Frontend: https://your-app.netlify.app
-* Backend: https://your-backend.onrender.com
+* Frontend: https://https://electro-xp.netlify.app/
+* Backend: https://https://electro-backend-zm1z.onrender.com
 
 ---
 
