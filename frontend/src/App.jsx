@@ -1,26 +1,27 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import Sidebar from './components/Sidebar';
-import AIAssistant from './components/AIAssistant';
-import Login from './pages/Login';
-import Profile from './pages/Profile';
-import JourneyHub from './pages/JourneyHub';
-import Dashboard from './pages/Dashboard';
-import KnowledgeHub from './pages/KnowledgeHub';
-import Quests from './pages/Quests';
-import ChatPage from './pages/ChatPage';
-import LandingPage from './pages/LandingPage';
+import { lazy, Suspense } from 'react';
+
+// Lazy Load Pages
+const Login = lazy(() => import('./pages/Login'));
+const Profile = lazy(() => import('./pages/Profile'));
+const JourneyHub = lazy(() => import('./pages/JourneyHub'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const KnowledgeHub = lazy(() => import('./pages/KnowledgeHub'));
+const Quests = lazy(() => import('./pages/Quests'));
+const ChatPage = lazy(() => import('./pages/ChatPage'));
+const LandingPage = lazy(() => import('./pages/LandingPage'));
 
 // New Dashboard Pages
-import RegisterCenter from './pages/dashboard/RegisterCenter';
-import EpicCardCenter from './pages/dashboard/EpicCardCenter';
-import BoothFinder from './pages/dashboard/BoothFinder';
-import CandidateKnow from './pages/dashboard/CandidateKnow';
-import LearnProcess from './pages/dashboard/LearnProcess';
-import PollingChecklist from './pages/dashboard/PollingChecklist';
-import RewardsPage from './pages/dashboard/RewardsPage';
+const RegisterCenter = lazy(() => import('./pages/dashboard/RegisterCenter'));
+const EpicCardCenter = lazy(() => import('./pages/dashboard/EpicCardCenter'));
+const BoothFinder = lazy(() => import('./pages/dashboard/BoothFinder'));
+const CandidateKnow = lazy(() => import('./pages/dashboard/CandidateKnow'));
+const LearnProcess = lazy(() => import('./pages/dashboard/LearnProcess'));
+const PollingChecklist = lazy(() => import('./pages/dashboard/PollingChecklist'));
+const RewardsPage = lazy(() => import('./pages/dashboard/RewardsPage'));
+const Sidebar = lazy(() => import('./components/Sidebar'));
+const AIAssistant = lazy(() => import('./components/AIAssistant'));
 
-import { useContext } from 'react';
-import { AppContext } from './context/AppContext';
 import { useAuth } from './context/AuthContext';
 
 function ProtectedRoute({ children }) {
@@ -45,10 +46,14 @@ function AppLayout({ children }) {
 
   return (
     <div className="flex min-h-screen bg-slate-50 dark:bg-darkBase text-slate-900 dark:text-white transition-colors duration-300">
-      {showChrome && <Sidebar />}
+      <Suspense fallback={null}>
+        {showChrome && <Sidebar />}
+      </Suspense>
       <main className={`flex-1 min-h-screen overflow-auto relative ${showChrome ? 'pb-20 md:pb-0 md:ml-64 w-full' : 'w-full'}`}>
         {children}
-        {showChrome && <AIAssistant />}
+        <Suspense fallback={null}>
+          {showChrome && <AIAssistant />}
+        </Suspense>
       </main>
     </div>
   );
@@ -71,28 +76,34 @@ function App() {
   return (
     <Router>
       <AppLayout>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<AuthRedirect><Login /></AuthRedirect>} />
-          
-          <Route path="/dashboard" element={
-            <ProtectedRoute><Dashboard /></ProtectedRoute>
-          } />
-          <Route path="/journey" element={<ProtectedRoute><JourneyHub /></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-          <Route path="/knowledge" element={<ProtectedRoute><KnowledgeHub /></ProtectedRoute>} />
-          <Route path="/quests" element={<ProtectedRoute><Quests /></ProtectedRoute>} />
-          <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
-          
-          {/* New Dashboard Routes */}
-          <Route path="/dashboard/register" element={<ProtectedRoute><RegisterCenter /></ProtectedRoute>} />
-          <Route path="/dashboard/epic" element={<ProtectedRoute><EpicCardCenter /></ProtectedRoute>} />
-          <Route path="/dashboard/booth" element={<ProtectedRoute><BoothFinder /></ProtectedRoute>} />
-          <Route path="/dashboard/candidates" element={<ProtectedRoute><CandidateKnow /></ProtectedRoute>} />
-          <Route path="/dashboard/learn" element={<ProtectedRoute><LearnProcess /></ProtectedRoute>} />
-          <Route path="/dashboard/checklist" element={<ProtectedRoute><PollingChecklist /></ProtectedRoute>} />
-          <Route path="/dashboard/rewards" element={<ProtectedRoute><RewardsPage /></ProtectedRoute>} />
-        </Routes>
+        <Suspense fallback={
+          <div className="flex-1 flex items-center justify-center">
+            <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        }>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<AuthRedirect><Login /></AuthRedirect>} />
+            
+            <Route path="/dashboard" element={
+              <ProtectedRoute><Dashboard /></ProtectedRoute>
+            } />
+            <Route path="/journey" element={<ProtectedRoute><JourneyHub /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/knowledge" element={<ProtectedRoute><KnowledgeHub /></ProtectedRoute>} />
+            <Route path="/quests" element={<ProtectedRoute><Quests /></ProtectedRoute>} />
+            <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
+            
+            {/* New Dashboard Routes */}
+            <Route path="/dashboard/register" element={<ProtectedRoute><RegisterCenter /></ProtectedRoute>} />
+            <Route path="/dashboard/epic" element={<ProtectedRoute><EpicCardCenter /></ProtectedRoute>} />
+            <Route path="/dashboard/booth" element={<ProtectedRoute><BoothFinder /></ProtectedRoute>} />
+            <Route path="/dashboard/candidates" element={<ProtectedRoute><CandidateKnow /></ProtectedRoute>} />
+            <Route path="/dashboard/learn" element={<ProtectedRoute><LearnProcess /></ProtectedRoute>} />
+            <Route path="/dashboard/checklist" element={<ProtectedRoute><PollingChecklist /></ProtectedRoute>} />
+            <Route path="/dashboard/rewards" element={<ProtectedRoute><RewardsPage /></ProtectedRoute>} />
+          </Routes>
+        </Suspense>
       </AppLayout>
     </Router>
   );

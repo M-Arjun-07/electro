@@ -3,7 +3,6 @@ import { auth } from '../firebase';
 
 const rawBaseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const baseURL = rawBaseURL.endsWith('/') ? rawBaseURL.slice(0, -1) : rawBaseURL;
-console.log(`[API Debug] Connecting to: ${baseURL}`);
 
 const api = axios.create({
   baseURL,

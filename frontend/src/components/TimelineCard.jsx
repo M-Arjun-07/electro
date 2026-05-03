@@ -15,7 +15,22 @@ export default function TimelineCard() {
     }
   }, [userProfile.state]);
 
-  if (!timeline) return null;
+  if (!timeline) {
+    return (
+      <div className="bg-white dark:bg-darkSurface p-6 md:p-8 rounded-3xl border border-slate-200 dark:border-zinc-800 shadow-xl animate-pulse">
+        <div className="h-8 w-48 bg-slate-200 dark:bg-zinc-800 rounded-lg mb-8"></div>
+        {[1, 2, 3].map(i => (
+          <div key={i} className="flex gap-4 mb-6">
+            <div className="w-10 h-10 bg-slate-200 dark:bg-zinc-800 rounded-full"></div>
+            <div className="space-y-2">
+              <div className="h-3 w-32 bg-slate-200 dark:bg-zinc-800 rounded"></div>
+              <div className="h-5 w-48 bg-slate-200 dark:bg-zinc-800 rounded"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   const EventRow = ({ icon, label, date, isLast }) => (
     <div className={`flex items-start gap-4 ${isLast ? '' : 'mb-6 relative'}`}>

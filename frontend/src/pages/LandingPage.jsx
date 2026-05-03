@@ -8,21 +8,22 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-darkBase text-slate-900 dark:text-white selection:bg-primary selection:text-white overflow-x-hidden">
       {/* Animated Background Elements */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true" role="presentation">
         <div className="absolute top-[-10%] left-[-10%] w-[70%] md:w-[40%] h-[40%] bg-primary/20 blur-[80px] md:blur-[120px] rounded-full animate-pulse"></div>
         <div className="absolute bottom-[-10%] right-[-10%] w-[70%] md:w-[40%] h-[40%] bg-indigo-500/20 blur-[80px] md:blur-[120px] rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
       </div>
 
       {/* Navigation */}
-      <nav className="relative z-50 flex justify-between items-center px-4 md:px-12 py-6 md:py-8 max-w-7xl mx-auto">
+      <nav className="relative z-50 flex justify-between items-center px-4 md:px-12 py-6 md:py-8 max-w-7xl mx-auto" aria-label="Main Navigation">
         <div className="flex items-center gap-2 md:gap-3">
-          <div className="w-8 h-8 md:w-10 md:h-10 bg-primary rounded-lg md:rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+          <div className="w-8 h-8 md:w-10 md:h-10 bg-primary rounded-lg md:rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/30" role="img" aria-label="Voter Campaign Logo">
             <ShieldCheck size={20} />
           </div>
           <span className="font-black text-xl md:text-2xl tracking-tighter uppercase">Voter <span className="text-primary">Campaign</span></span>
         </div>
         <button 
           onClick={() => navigate('/login')}
+          aria-label="Login to Access Headquarters"
           className="btn-primary px-5 md:px-8 py-2.5 md:py-3 rounded-full font-bold text-[10px] md:text-sm uppercase tracking-widest shadow-xl shadow-indigo-500/20 hover:scale-105 transition-all"
         >
           Access HQ
@@ -46,19 +47,20 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-4 pt-4 items-center justify-center md:justify-start">
             <button 
               onClick={() => navigate('/login')}
+              aria-label="Start your voting journey"
               className="w-full sm:w-auto px-10 py-5 bg-primary text-slate-900 rounded-2xl font-black uppercase tracking-widest text-sm flex items-center justify-center gap-3 hover:bg-cyan-400 hover:shadow-[0_0_30px_rgba(34,211,238,0.4)] transition-all group"
             >
-              Start Journey <ChevronRight className="group-hover:translate-x-1 transition-transform" />
+              Start Journey <ChevronRight className="group-hover:translate-x-1 transition-transform" aria-hidden="true" />
             </button>
             <div className="flex items-center gap-4 px-6 py-4 bg-white dark:bg-darkSurface border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-lg w-full sm:w-auto justify-center">
-                <div className="flex -space-x-3">
-                   {[1,2,3,4].map(i => (
-                     <div key={i} className="w-8 h-8 rounded-full border-2 border-white dark:border-darkSurface bg-slate-200 dark:bg-zinc-800 flex items-center justify-center overflow-hidden">
-                        <img src={`https://i.pravatar.cc/100?u=${i}`} alt="user" className="w-full h-full object-cover" />
-                     </div>
-                   ))}
-                </div>
-                <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 dark:text-slate-400 uppercase tracking-tighter">Joined by 2k+ Voters</span>
+                <div className="flex -space-x-3" aria-label="Recent users who joined">
+                    {[1,2,3,4].map(i => (
+                      <div key={i} className="w-8 h-8 rounded-full border-2 border-white dark:border-darkSurface bg-slate-200 dark:bg-zinc-800 flex items-center justify-center overflow-hidden">
+                         <img src={`https://i.pravatar.cc/100?u=${i}`} alt={`User avatar ${i}`} className="w-full h-full object-cover" loading="lazy" width="32" height="32" />
+                      </div>
+                    ))}
+                 </div>
+                 <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-tighter">Joined by 2k+ Voters</span>
             </div>
           </div>
         </div>

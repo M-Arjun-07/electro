@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import api from '../services/api';
 import confetti from 'canvas-confetti';
 import { useAuth } from './AuthContext';
@@ -11,10 +11,24 @@ export const AppProvider = ({ children }) => {
   const { currentUser, logout } = useAuth();
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
   const [videoConfig, setVideoConfig] = useState({});
-  const [userProfile, setUserProfile] = useState({
-    state: '', district: '', taluk: '', city: '', pincode: '', age: '', name: '', email: '', mobile: '', 
-    first_time_voter: false, epic_available: false, language: 'English', points: 0, 
-    progress: [], knowledge: {}, watched_videos: [], learned_cards: []
+  const [loadingConfig, setLoadingConfig] = useState(true);
+  const [isProfileLoading, setIsProfileLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState(() => {
+    try {
+      const cached = localStorage.getItem('user_profile_cache');
+      return cached ? JSON.parse(cached) : {
+        state: '', district: '', taluk: '', city: '', pincode: '', age: '', name: '', email: '', mobile: '', 
+        first_time_voter: false, epic_available: false, language: 'English', points: 0, 
+        progress: [], knowledge: {}, watched_videos: [], learned_cards: []
+      };
+    } catch (e) {
+      // Production-safe error handling
+      return {
+        state: '', district: '', taluk: '', city: '', pincode: '', age: '', name: '', email: '', mobile: '', 
+        first_time_voter: false, epic_available: false, language: 'English', points: 0, 
+        progress: [], knowledge: {}, watched_videos: [], learned_cards: []
+      };
+    }
   });
 
   // Real-time listener for user data
@@ -23,8 +37,7 @@ export const AppProvider = ({ children }) => {
       const unsubscribe = onSnapshot(doc(db, "users", currentUser.uid), (doc) => {
         if (doc.exists()) {
           const data = doc.data();
-          // Map Firestore structure back to flat structure for UI compatibility
-          setUserProfile({
+          const mappedProfile = {
             username: data.username,
             name: data.name,
             email: data.email,
@@ -43,7 +56,12 @@ export const AppProvider = ({ children }) => {
             knowledge: data.progress?.knowledge || {},
             watched_videos: data.progress?.watched_videos || [],
             learned_cards: data.progress?.learned_cards || []
-          });
+          };
+          setUserProfile(mappedProfile);
+          localStorage.setItem('user_profile_cache', JSON.stringify(mappedProfile));
+          setIsProfileLoading(false);
+        } else {
+          setIsProfileLoading(false);
         }
       });
       return unsubscribe;
@@ -53,11 +71,23 @@ export const AppProvider = ({ children }) => {
         first_time_voter: false, epic_available: false, language: 'English', points: 0, 
         progress: [], knowledge: {}, watched_videos: [], learned_cards: []
       });
+      setIsProfileLoading(false);
     }
   }, [currentUser]);
 
   useEffect(() => {
-    api.get('/videos/all').then(res => setVideoConfig(res.data)).catch(console.error);
+    let isMounted = true;
+    api.get('/videos/all')
+      .then(res => {
+        if (isMounted) {
+          setVideoConfig(res.data);
+          setLoadingConfig(false);
+        }
+      })
+      .catch(err => {
+        if (isMounted) setLoadingConfig(false);
+      });
+    return () => { isMounted = false; };
   }, []);
 
   useEffect(() => {
@@ -66,11 +96,11 @@ export const AppProvider = ({ children }) => {
     else document.documentElement.classList.remove('dark');
   }, [theme]);
 
-  const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  const toggleTheme = useCallback(() => setTheme(prev => prev === 'dark' ? 'light' : 'dark'), []);
 
-  const triggerConfetti = () => {
+  const triggerConfetti = useCallback(() => {
     confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#22d3ee', '#a855f7', '#facc15'] });
-  };
+  }, []);
 
   const loginUser = async (email, password) => {
     // Handled by AuthContext now, but keeping for compatibility if needed
@@ -81,12 +111,11 @@ export const AppProvider = ({ children }) => {
     // Same as above
   };
 
-  const logoutUser = () => {
+  const logoutUser = useCallback(() => {
     logout();
-  };
+  }, [logout]);
 
-  const saveProfile = async (newProfile) => {
-    // Map flat structure back to Firestore nested structure
+  const saveProfile = useCallback(async (newProfile) => {
     const updates = {
       name: newProfile.name,
       mobile: newProfile.mobile,
@@ -106,49 +135,40 @@ export const AppProvider = ({ children }) => {
     };
     try {
       await api.post('/user/update', updates);
-    } catch (e) { console.error(e); }
-  };
+    } catch (e) { /* silent fail for background updates */ }
+  }, []);
 
-  const addPoints = async (pointsToAdd) => {
+  const addPoints = useCallback(async (pointsToAdd) => {
     try {
       await api.post('/add-xp', { points: pointsToAdd });
     } catch (e) { console.error(e); }
-  };
+  }, []);
 
-  const updateKnowledge = async (module, score, total) => {
+  const updateKnowledge = useCallback(async (module, score, total) => {
     try {
       await api.post('/quiz-result', { module, score, total });
     } catch (e) { console.error(e); }
-  };
+  }, []);
 
-  const completeVideoTask = async (videoId, xp) => {
+  const completeVideoTask = useCallback(async (videoId, xp) => {
     try {
       await api.post('/complete-video', { video_id: videoId, xp });
     } catch (e) { console.error(e); }
-  };
+  }, []);
 
-  const completeTask = async (taskId, xp) => {
+  const completeTask = useCallback(async (taskId, xp) => {
     try {
       await api.post('/complete-task', { task_id: taskId, xp });
     } catch (e) { console.error(e); }
-  };
+  }, []);
 
-  const markCardLearned = async (cardId, xp) => {
+  const markCardLearned = useCallback(async (cardId, xp) => {
     try {
       await api.post('/mark-learned', { card_id: cardId, xp });
     } catch (e) { console.error(e); }
-  };
+  }, []);
 
-  const getOverallKnowledge = () => {
-    const modules = ['register', 'epic', 'booth', 'candidates', 'learn', 'checklist', 'rewards'];
-    let completedCount = 0;
-    modules.forEach(m => {
-      if (getModuleProgress(m) >= 100) completedCount++;
-    });
-    return Math.round((completedCount / modules.length) * 100);
-  };
-
-  const getModuleProgress = (modId) => {
+  const getModuleProgress = useCallback((modId) => {
     const getModVideoProgress = (id) => {
       const modVideos = videoConfig[id] || [];
       if (modVideos.length === 0) return 100;
@@ -194,7 +214,16 @@ export const AppProvider = ({ children }) => {
       default:
         return 0;
     }
-  };
+  }, [userProfile, videoConfig]);
+
+  const getOverallKnowledge = useCallback(() => {
+    const modules = ['register', 'epic', 'booth', 'candidates', 'learn', 'checklist', 'rewards'];
+    let completedCount = 0;
+    modules.forEach(m => {
+      if (getModuleProgress(m) >= 100) completedCount++;
+    });
+    return Math.round((completedCount / modules.length) * 100);
+  }, [userProfile, videoConfig, getModuleProgress]);
 
   const refreshUser = () => {
     // Firestore listener handles real-time updates now
@@ -203,7 +232,7 @@ export const AppProvider = ({ children }) => {
   return (
     <AppContext.Provider value={{ 
       theme, toggleTheme, username: userProfile.username, loginUser, registerUser, logoutUser, 
-      userProfile, setUserProfile, saveProfile, addPoints, updateKnowledge, 
+      userProfile, setUserProfile, saveProfile, addPoints, updateKnowledge, isProfileLoading,
       completeVideoTask, completeTask, markCardLearned, getOverallKnowledge, getModuleProgress, refreshUser, triggerConfetti 
     }}>
       {children}

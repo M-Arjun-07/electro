@@ -2,12 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  @font-face {
+    font-family: 'Inter';
+    font-display: swap;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+  text-rendering: optimizeSpeed;
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-display: swap;
+  src: url('https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZJhjp-EkQ.woff2') format('woff2');
+}
+
 body {
   font-family: 'Inter', sans-serif;
   background-color: #f8fafc;
   color: #0f172a;
   margin: 0;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+section {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 500px;
+}
+
+/* Accessible focus rings */
+a:focus-visible, button:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
 }
 
 .dark body {
@@ -16,7 +46,7 @@ body {
 }
 
 .btn-primary {
-  background: #6366f1; /* Indigo 500 */
+  background: #4f46e5; /* Indigo 600 - Better Contrast */
   color: white;
   font-weight: 700;
   transition: all 0.2s ease;
@@ -30,7 +60,7 @@ body {
 }
 
 .dark .btn-primary {
-  background: #6366f1;
+  background: #4f46e5;
 }
 .dark .btn-primary:hover:not(:disabled) {
   background: #4f46e5;
@@ -41,8 +71,7 @@ body {
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 .dark ::-webkit-scrollbar-thumb { background: #27272a; }
 
-/* Remove default link outlines */
-a:focus, button:focus { outline: none; }
+/* Custom scrollbar */
 
 /* 3D Flip Utilities */
 .perspective-1000 {

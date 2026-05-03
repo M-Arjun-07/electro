@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Mic, MicOff } from 'lucide-react';
 
 export default function VoiceAssistant({ onVoiceInput }) {
@@ -21,27 +21,31 @@ export default function VoiceAssistant({ onVoiceInput }) {
       };
       setRecognition(recog);
     } else {
-      console.warn('Speech Recognition API not supported in this browser.');
+      // Speech recognition not supported
     }
   }, [onVoiceInput]);
 
-  const toggleListen = () => {
-    if (!recognition) return alert('Speech recognition not supported in this browser.');
+  const toggleListen = useCallback(() => {
+    if (!recognition) {
+      return;
+    }
     if (isListening) {
       recognition.stop();
     } else {
       recognition.start();
     }
-  };
+  }, [recognition, isListening]);
 
   return (
     <button 
       onClick={toggleListen}
+      aria-label={isListening ? "Stop voice assistant" : "Start voice assistant"}
+      aria-pressed={isListening}
       className={`p-3 rounded-full transition-all flex items-center justify-center text-white shadow-lg
         ${isListening ? 'bg-red-500 animate-pulse' : 'bg-secondary hover:bg-purple-600'}`}
       title={isListening ? "Listening..." : "Click to speak"}
     >
-      {isListening ? <MicOff size={20} /> : <Mic size={20} />}
+      {isListening ? <MicOff size={20} aria-hidden="true" /> : <Mic size={20} aria-hidden="true" />}
     </button>
   );
 }

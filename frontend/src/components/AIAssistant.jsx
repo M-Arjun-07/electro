@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, useRef } from 'react';
+import React, { useState, useContext, useEffect, useRef, useCallback } from 'react';
 import { MessageSquare, X, Send, Bot, Sparkles, Loader2, Maximize2, Minimize2, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
 import { AppContext } from '../context/AppContext';
 import api from '../services/api';
@@ -22,8 +22,8 @@ export default function AIAssistant() {
     }
   }, [chat]);
 
-  const handleSend = async (e) => {
-    e.preventDefault();
+  const handleSend = useCallback(async (e) => {
+    if (e) e.preventDefault();
     if (!message.trim() || loading) return;
 
     const userMsg = message;
@@ -43,7 +43,7 @@ export default function AIAssistant() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [message, loading, userProfile.state, username]);
 
   // Text to Speech
   useEffect(() => {
@@ -53,7 +53,7 @@ export default function AIAssistant() {
     }
   }, [chat, isSpeakingEnabled, loading]);
 
-  const speak = (text) => {
+  const speak = useCallback((text) => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
@@ -61,13 +61,13 @@ export default function AIAssistant() {
       utterance.pitch = 1.0;
       window.speechSynthesis.speak(utterance);
     }
-  };
+  }, []);
 
   // Speech Recognition
-  const toggleListening = () => {
+  const toggleListening = useCallback(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert("Speech recognition is not supported in your browser.");
+      console.error("Speech recognition is not supported in your browser.");
       return;
     }
 
@@ -88,11 +88,10 @@ export default function AIAssistant() {
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
       setMessage(transcript);
-      // Auto-send if needed, but let's just populate the input for now
     };
 
     recognition.start();
-  };
+  }, [isListening]);
 
   return (
     <div className={`fixed z-[100] transition-all duration-500 ease-in-out flex flex-col items-end gap-4 ${
@@ -122,21 +121,35 @@ export default function AIAssistant() {
               <button 
                 onClick={() => setIsSpeakingEnabled(!isSpeakingEnabled)} 
                 className={`p-2 rounded-full transition-colors ${isSpeakingEnabled ? 'bg-white/20 text-white' : 'text-white/50 hover:bg-white/10'}`}
-                title={isSpeakingEnabled ? "Mute AI" : "Unmute AI"}
+                aria-label={isSpeakingEnabled ? "Mute AI Assistant" : "Unmute AI Assistant"}
+                aria-pressed={isSpeakingEnabled}
               >
                 {isSpeakingEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />}
               </button>
-              <button onClick={() => setIsMaximized(!isMaximized)} className="hover:bg-white/20 p-2 rounded-full transition-colors">
+              <button 
+                onClick={() => setIsMaximized(!isMaximized)} 
+                className="hover:bg-white/20 p-2 rounded-full transition-colors"
+                aria-label={isMaximized ? "Minimize chat" : "Maximize chat"}
+              >
                 {isMaximized ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
               </button>
-              <button onClick={() => { setIsOpen(false); setIsMaximized(false); if(isSpeakingEnabled) window.speechSynthesis.cancel(); }} className="hover:bg-white/20 p-2 rounded-full transition-colors">
+              <button 
+                onClick={() => { setIsOpen(false); setIsMaximized(false); if(isSpeakingEnabled) window.speechSynthesis.cancel(); }} 
+                className="hover:bg-white/20 p-2 rounded-full transition-colors"
+                aria-label="Close chat assistant"
+              >
                 <X size={20} />
               </button>
             </div>
           </div>
 
           {/* Messages */}
-          <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50 dark:bg-darkBase/50">
+          <div 
+            ref={scrollRef} 
+            className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50 dark:bg-darkBase/50"
+            aria-live="polite"
+            aria-relevant="additions"
+          >
             {chat.map((msg, i) => (
               <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[85%] p-4 rounded-2xl text-sm shadow-sm ${
@@ -163,6 +176,8 @@ export default function AIAssistant() {
             <button 
               type="button"
               onClick={toggleListening}
+              aria-label={isListening ? "Stop voice input" : "Start voice input"}
+              aria-pressed={isListening}
               className={`p-3 rounded-xl transition-all ${isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-slate-100 dark:bg-zinc-900 text-slate-600 dark:text-slate-400 hover:text-primary'}`}
             >
               {isListening ? <MicOff size={18} /> : <Mic size={18} />}
@@ -174,7 +189,12 @@ export default function AIAssistant() {
               placeholder="Ask anything..."
               className="flex-1 bg-slate-100 dark:bg-zinc-900 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary transition-all"
             />
-            <button type="submit" disabled={loading || !message.trim()} className="bg-primary hover:bg-indigo-600 text-white p-3 rounded-xl transition-all disabled:opacity-50 shadow-lg shadow-indigo-500/20">
+            <button 
+              type="submit" 
+              disabled={loading || !message.trim()} 
+              aria-label="Send message"
+              className="bg-primary hover:bg-indigo-600 text-white p-3 rounded-xl transition-all disabled:opacity-50 shadow-lg shadow-indigo-500/20"
+            >
               <Send size={18} />
             </button>
           </form>
@@ -184,12 +204,14 @@ export default function AIAssistant() {
       {/* Toggle Button */}
       <button 
         onClick={() => setIsOpen(!isOpen)}
+        aria-label={isOpen ? "Close AI Assistant" : "Open AI Assistant"}
+        aria-expanded={isOpen}
         className={`w-14 h-14 rounded-full flex items-center justify-center text-white shadow-2xl transition-all hover:scale-110 active:scale-95 group relative ${isOpen ? 'bg-slate-800 dark:bg-zinc-800' : 'bg-primary'}`}
       >
-        <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white dark:border-darkBase animate-pulse"></div>
+        <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white dark:border-darkBase animate-pulse" aria-hidden="true"></div>
         {isOpen ? <X size={28} /> : <MessageSquare size={28} />}
         {!isOpen && (
-          <span className="absolute right-full mr-4 bg-white dark:bg-darkSurface text-slate-800 dark:text-white px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap shadow-xl opacity-0 group-hover:opacity-100 transition-opacity border border-slate-200 dark:border-zinc-800 pointer-events-none">
+          <span className="absolute right-full mr-4 bg-white dark:bg-darkSurface text-slate-800 dark:text-white px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap shadow-xl opacity-0 group-hover:opacity-100 transition-opacity border border-slate-200 dark:border-zinc-800 pointer-events-none" aria-hidden="true">
             Need help? Ask me!
           </span>
         )}

@@ -80,6 +80,8 @@ export default function Login() {
                   placeholder="e.g. John Doe"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  autoComplete="name"
+                  aria-required="true"
                   className="w-full bg-slate-50 dark:bg-darkBase border border-slate-300 dark:border-zinc-800 rounded-xl px-5 py-3 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                 />
               </div>
@@ -92,6 +94,8 @@ export default function Login() {
                   placeholder="e.g. maverick_01"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
+                  autoComplete="username"
+                  aria-required="true"
                   className="w-full bg-slate-50 dark:bg-darkBase border border-slate-300 dark:border-zinc-800 rounded-xl px-5 py-3 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary transition-all"
                 />
               </div>
@@ -107,6 +111,8 @@ export default function Login() {
               placeholder="name@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              aria-required="true"
               className="w-full bg-slate-50 dark:bg-darkBase border border-slate-300 dark:border-zinc-800 rounded-xl px-5 py-3 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary transition-all"
             />
           </div>
@@ -120,6 +126,8 @@ export default function Login() {
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              autoComplete={isLogin ? "current-password" : "new-password"}
+              aria-required="true"
               className="w-full bg-slate-50 dark:bg-darkBase border border-slate-300 dark:border-zinc-800 rounded-xl px-5 py-3 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary transition-all"
             />
           </div>

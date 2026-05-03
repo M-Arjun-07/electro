@@ -10,13 +10,30 @@ export default function Leaderboard() {
     api.get('/leaderboard').then(res => {
       setLeaders(res.data);
       setLoading(false);
-    }).catch(err => {
-      console.error(err);
+    }).catch(() => {
       setLoading(false);
     });
   }, []);
 
-  if (loading) return <div className="bg-white dark:bg-darkSurface p-8 rounded-3xl border border-slate-200 dark:border-zinc-800 shadow-xl flex justify-center"><Loader2 className="animate-spin text-primary w-8 h-8" /></div>;
+  if (loading) {
+    return (
+      <div className="bg-white dark:bg-darkSurface p-6 rounded-3xl border border-slate-200 dark:border-zinc-800 shadow-xl animate-pulse">
+        <div className="h-8 w-48 bg-slate-200 dark:bg-zinc-800 rounded-lg mb-6"></div>
+        {[1, 2, 3, 4, 5].map(i => (
+          <div key={i} className="flex justify-between items-center mb-4">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-slate-200 dark:bg-zinc-800 rounded-full"></div>
+              <div className="space-y-2">
+                <div className="h-4 w-24 bg-slate-200 dark:bg-zinc-800 rounded"></div>
+                <div className="h-3 w-16 bg-slate-200 dark:bg-zinc-800 rounded"></div>
+              </div>
+            </div>
+            <div className="h-8 w-16 bg-slate-200 dark:bg-zinc-800 rounded-xl"></div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white dark:bg-darkSurface rounded-3xl border border-slate-200 dark:border-zinc-800 shadow-xl overflow-hidden flex flex-col">
@@ -24,11 +41,11 @@ export default function Leaderboard() {
         <Trophy className="text-secondary w-6 h-6" />
         <h3 className="font-bold text-slate-800 dark:text-white text-xl">Top Citizens Leaderboard</h3>
       </div>
-      <div className="p-4 flex-1">
+      <div className="p-4 flex-1" role="list" aria-label="Leaderboard rankings">
         {leaders.map((user, idx) => (
-          <div key={idx} className={`flex items-center justify-between p-4 rounded-2xl mb-2 transition-colors ${idx === 0 ? 'bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 shadow-sm' : 'hover:bg-slate-50 dark:hover:bg-zinc-800/50'}`}>
+          <div key={idx} role="listitem" className={`flex items-center justify-between p-4 rounded-2xl mb-2 transition-colors ${idx === 0 ? 'bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 shadow-sm' : 'hover:bg-slate-50 dark:hover:bg-zinc-800/50'}`}>
             <div className="flex items-center gap-4">
-              <div className={`w-10 h-10 flex items-center justify-center font-bold rounded-full text-lg ${idx === 0 ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30' : idx === 1 ? 'bg-slate-300 text-slate-800' : idx === 2 ? 'bg-orange-400 text-white' : 'text-slate-600 dark:text-slate-400 font-medium bg-slate-100 dark:bg-zinc-800'}`}>
+              <div aria-label={`Rank ${idx + 1}`} className={`w-10 h-10 flex items-center justify-center font-bold rounded-full text-lg ${idx === 0 ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30' : idx === 1 ? 'bg-slate-300 text-slate-800' : idx === 2 ? 'bg-orange-400 text-white' : 'text-slate-600 dark:text-slate-400 font-medium bg-slate-100 dark:bg-zinc-800'}`}>
                 {idx < 3 ? <Medal size={20} /> : idx + 1}
               </div>
               <div>
